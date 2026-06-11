@@ -17,6 +17,7 @@
             # firmware dependencies
 
             # db dependencies
+            sqlite
 
             # rust dependencies
 
