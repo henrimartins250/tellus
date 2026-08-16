@@ -5,7 +5,7 @@
 Build a working end-to-end agricultural monitoring prototype capable of:
 
 * Receiving data from ESP32 nodes.
-* Storing data in SQLite.
+* Storing data in libSQL (Turso).
 * Displaying current and historical values in a web dashboard.
 * Supporting multiple sensor nodes.
 
@@ -32,7 +32,7 @@ Success is:
 ### Backend
 
 * HTTP API
-* SQLite database
+* libSQL (Turso) database
 * Data validation
 * Historical storage
 
@@ -83,7 +83,7 @@ ESP32 Nodes
 HTTP API (Rust)
      │
      ▼
-SQLite
+libSQL (Turso)
      │
      ▼
 Dashboard
@@ -119,7 +119,7 @@ Suggested libraries:
 * axum
 * tokio
 * serde
-* rusqlite
+* libsql (Turso client)
 
 Responsibilities:
 
@@ -132,9 +132,9 @@ Responsibilities:
 
 ## Database
 
-SQLite
+libSQL (Turso)
 
-Source of truth.
+Local file-backed libSQL database. Can be migrated to Turso's distributed database later without code changes.
 
 Raw measurements are never modified.
 
@@ -195,7 +195,7 @@ Goal:
 POST /api/sensor
 ```
 
-Store test values in SQLite.
+Store test values in libSQL.
 
 No ESP32 yet.
 
@@ -265,8 +265,8 @@ ESP32
 HTTP POST
    ↓
 Rust API
-   ↓
-SQLite
+    ↓
+libSQL
    ↓
 Dashboard
 ```
@@ -346,7 +346,7 @@ The parking lot exists so ideas are not lost, but they do not interrupt developm
 The project is successful when:
 
 * At least one ESP32 sends real sensor data.
-* Data is stored in SQLite.
+* Data is stored in libSQL (Turso).
 * Data survives restarts.
 * Dashboard displays current values.
 * Dashboard displays historical values.
