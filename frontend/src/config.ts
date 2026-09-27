@@ -52,8 +52,10 @@ const VALIDATORS: Record<keyof AppConfig, Validator> = {
   theme: (v) => THEMES.some((t) => t.id === v),
   locale: (v) => LOCALES.some((l) => l.id === v),
   units: (v) => UNITS.some((u) => u.id === v),
-  lat: (v) => typeof v === "number" && Number.isFinite(v) && v >= -90 && v <= 90,
-  lon: (v) => typeof v === "number" && Number.isFinite(v) && v >= -180 && v <= 180,
+  lat: (v) =>
+    typeof v === "number" && Number.isFinite(v) && v >= -90 && v <= 90,
+  lon: (v) =>
+    typeof v === "number" && Number.isFinite(v) && v >= -180 && v <= 180,
   backendUrl: (v) => typeof v === "string" && v.length > 0,
   refreshInterval: (v) =>
     typeof v === "number" && Number.isFinite(v) && v >= 5000,

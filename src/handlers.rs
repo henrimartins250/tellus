@@ -23,14 +23,17 @@ pub async fn post_sensors(
     ";
 
     let mut rows = conn
-        .query(query, libsql::params![
-            payload.node_id.clone(),
-            payload.soil_temperature,
-            payload.soil_moisture,
-            payload.air_temperature,
-            payload.air_humidity,
-            payload.light_level,
-        ])
+        .query(
+            query,
+            libsql::params![
+                payload.node_id.clone(),
+                payload.soil_temperature,
+                payload.soil_moisture,
+                payload.air_temperature,
+                payload.air_humidity,
+                payload.light_level,
+            ],
+        )
         .await
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
@@ -61,9 +64,7 @@ pub async fn post_sensors(
     Ok(ApiResponse::Created(response_data))
 }
 
-pub async fn get_sensors(
-    State(state): State<Arc<AppState>>,
-) -> Result<ApiResponse, ApiError> {
+pub async fn get_sensors(State(state): State<Arc<AppState>>) -> Result<ApiResponse, ApiError> {
     let conn = state
         .db
         .connect()
@@ -88,14 +89,30 @@ pub async fn get_sensors(
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?
     {
         readings.push(SensorReadingResponse {
-            id: row.get(0).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            timestamp: row.get(1).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            node_id: row.get(2).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            soil_temperature: row.get(3).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            soil_moisture: row.get(4).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            air_temperature: row.get::<Option<f64>>(5).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            air_humidity: row.get::<Option<f64>>(6).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            light_level: row.get::<Option<f64>>(7).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            id: row
+                .get(0)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            timestamp: row
+                .get(1)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            node_id: row
+                .get(2)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            soil_temperature: row
+                .get(3)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            soil_moisture: row
+                .get(4)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            air_temperature: row
+                .get::<Option<f64>>(5)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            air_humidity: row
+                .get::<Option<f64>>(6)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            light_level: row
+                .get::<Option<f64>>(7)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
         });
     }
 
@@ -134,14 +151,30 @@ pub async fn get_sensor_history(
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?
     {
         readings.push(SensorReadingResponse {
-            id: row.get(0).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            timestamp: row.get(1).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            node_id: row.get(2).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            soil_temperature: row.get(3).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            soil_moisture: row.get(4).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            air_temperature: row.get::<Option<f64>>(5).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            air_humidity: row.get::<Option<f64>>(6).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            light_level: row.get::<Option<f64>>(7).map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            id: row
+                .get(0)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            timestamp: row
+                .get(1)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            node_id: row
+                .get(2)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            soil_temperature: row
+                .get(3)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            soil_moisture: row
+                .get(4)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            air_temperature: row
+                .get::<Option<f64>>(5)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            air_humidity: row
+                .get::<Option<f64>>(6)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
+            light_level: row
+                .get::<Option<f64>>(7)
+                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
         });
     }
 

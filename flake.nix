@@ -20,6 +20,10 @@
             sqlite
 
             # rust dependencies
+            rustc
+            cargo
+            rust-analyzer
+            pkg-config # Critical for Cargo to find system libs
 
             # frontend dependencies
           ];
