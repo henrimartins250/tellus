@@ -82,24 +82,46 @@ CREATE TABLE IF NOT EXISTS sensor_readings (
     soil_temperature REAL NOT NULL,
     soil_moisture REAL NOT NULL,
     air_temperature REAL,
-    air_humidity REAL,
-    light_level REAL
+    air_humidity REAL
 );
 ```
+
+### Migration Runner
+
+Schema changes ship as versioned SQL files in `migrations/`, named
+`V<version>__<description>.sql` (e.g. `V1__initial__readings.sql`).
+
+- **To add a migration, create the file. Nothing else.** `build.rs` discovers the directory at
+  compile time and generates the registry, so there is no list in Rust to forget to update. A
+  malformed name or a duplicate version is a **compile error**, not a silent no-op.
+- Migrations are applied in **numeric** version order, not filename order — `V10__x.sql` runs
+  after `V2__x.sql`.
+- On boot, `run_migrations` creates the `_migrations` ledger, then for each unrecorded file runs
+  its statements **and its ledger entry inside a single transaction**. A failure rolls the whole
+  migration back, so it stays pending and is retried on the next boot. This is what makes a
+  half-applied migration recoverable.
+- Files are embedded with `include_str!`, so a deployed binary does not need `migrations/` at
+  runtime. Because of that, **never edit a migration that has already shipped** — add a new one.
+- Never declare a `CREATE TABLE` outside `migrations/`. Binaries such as `seed` must call
+  `run_migrations`, otherwise the schemas silently drift.
+- `tests/migrations.rs` guards this contract: the registry matches the directory, versions are
+  ascending and unique, migrations apply exactly once, a failed migration rolls back completely
+  and stays retryable, and `sensor_readings` matches the schema documented above. Run
+  `cargo test` after touching anything migration-related.
 
 ### Type Contract (ts-rs)
 
 - Do **NOT** manually create or edit TypeScript interfaces for backend DTOs or database entities.
 - Annotate Rust structs with `#[derive(TS)]` and `#[ts(export)]` to automatically generate TypeScript bindings inside `src/types/generated/`.
 
-Example Rust definition (note: `export_to` is resolved relative to the generated `bindings/` directory next to `Cargo.toml`):
+Example Rust definition (note: `export_to` is resolved relative to the directory holding `Cargo.toml`):
 
 ```rust
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../frontend/src/types/generated/SensorReading.ts")]
+#[ts(export, export_to = "../frontend/src/types/generated/SensorReading.ts")]
 pub struct SensorReading {
     pub id: i64,
     pub timestamp: String,
@@ -108,7 +130,6 @@ pub struct SensorReading {
     pub soil_moisture: f64,
     pub air_temperature: Option<f64>,
     pub air_humidity: Option<f64>,
-    pub light_level: Option<f64>,
 }
 ```
 
@@ -161,4 +182,5 @@ cargo test
 - 🚫 **NO Framework Injection:** Do NOT install or write code using React, Vue, Svelte, jQuery, or external CSS frameworks.
 - 🚫 **NO Direct State Mutation:** Views must NEVER mutate `AppState` properties directly.
 - 🚫 **NO Raw Network Logic in Components:** Do NOT embed `fetch()` or WebSocket code inside `Block` implementations.
-- 🔒 **DO NOT MODIFY:** Database migration scripts or SQL table layouts without explicit user instruction.
+- 🔒 **DO NOT MODIFY:** SQL table layouts without explicit user instruction. Schema changes go
+  through a **new** migration file in `migrations/`; shipped migrations are immutable.

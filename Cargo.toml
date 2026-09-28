@@ -6,8 +6,9 @@ default-run = "tellus"
 
 [dependencies]
 axum = "0.8.9"
+env_logger = "0.11.11"
 libsql = "0.9.30"
-refinery = "0.9.2"
+log = "0.4.34"
 serde = "1.0.228"
 serde_json = "1.0"
 tokio = "1.52.3"

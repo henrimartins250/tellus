@@ -17,8 +17,8 @@ pub async fn post_sensors(
     }
 
     let query = "
-        INSERT INTO sensor_readings (node_id, soil_temperature, soil_moisture, air_temperature, air_humidity, light_level)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+        INSERT INTO sensor_readings (node_id, soil_temperature, soil_moisture, air_temperature, air_humidity)
+        VALUES (?1, ?2, ?3, ?4, ?5)
         RETURNING id, timestamp
     ";
 
@@ -31,7 +31,6 @@ pub async fn post_sensors(
                 payload.soil_moisture,
                 payload.air_temperature,
                 payload.air_humidity,
-                payload.light_level,
             ],
         )
         .await
@@ -58,7 +57,6 @@ pub async fn post_sensors(
         soil_moisture: payload.soil_moisture,
         air_temperature: payload.air_temperature,
         air_humidity: payload.air_humidity,
-        light_level: payload.light_level,
     };
 
     Ok(ApiResponse::Created(response_data))
@@ -71,7 +69,7 @@ pub async fn get_sensors(State(state): State<Arc<AppState>>) -> Result<ApiRespon
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
     let query = "
-        SELECT id, timestamp, node_id, soil_temperature, soil_moisture, air_temperature, air_humidity, light_level
+        SELECT id, timestamp, node_id, soil_temperature, soil_moisture, air_temperature, air_humidity
         FROM sensor_readings
         WHERE id IN (SELECT MAX(id) FROM sensor_readings GROUP BY node_id)
         ORDER BY node_id
@@ -110,9 +108,6 @@ pub async fn get_sensors(State(state): State<Arc<AppState>>) -> Result<ApiRespon
             air_humidity: row
                 .get::<Option<f64>>(6)
                 .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            light_level: row
-                .get::<Option<f64>>(7)
-                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
         });
     }
 
@@ -128,7 +123,7 @@ pub async fn get_sensor_history(
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 
     let query = "
-        SELECT id, timestamp, node_id, soil_temperature, soil_moisture, air_temperature, air_humidity, light_level
+        SELECT id, timestamp, node_id, soil_temperature, soil_moisture, air_temperature, air_humidity
         FROM sensor_readings s
         WHERE s.id IN (
             SELECT id FROM sensor_readings
@@ -171,9 +166,6 @@ pub async fn get_sensor_history(
                 .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
             air_humidity: row
                 .get::<Option<f64>>(6)
-                .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
-            light_level: row
-                .get::<Option<f64>>(7)
                 .map_err(|e| ApiError::InternalServerError(e.to_string()))?,
         });
     }

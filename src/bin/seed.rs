@@ -1,24 +1,14 @@
 use libsql::Builder;
+use tellus::migrations::run_migrations;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = Builder::new_local("data.db").build().await?;
     let conn = db.connect()?;
 
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS sensor_readings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-            node_id TEXT NOT NULL,
-            soil_temperature REAL NOT NULL,
-            soil_moisture REAL NOT NULL,
-            air_temperature REAL,
-            air_humidity REAL,
-            light_level REAL
-        )",
-        (),
-    )
-    .await?;
+    // The schema is owned by the migration runner, not by this seed script —
+    // duplicating the CREATE TABLE here is how the two drift apart.
+    run_migrations(&conn).await?;
 
     let nodes = ["node-1", "node-2"];
     let base = 1687920000.0; // unix ts for 2023-06-28
@@ -33,12 +23,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let soil_moisture = 40.0 + (hour as f64 * 0.05).sin() * 15.0 + (i as f64) * 5.0;
             let air_temp = soil_temp + 2.0 + (hour as f64 * 0.03).cos() * 4.0;
             let air_humidity = 60.0 + (hour as f64 * 0.04).cos() * 10.0;
-            let light = (800.0 + (hour as f64 * 0.1).sin() * 400.0).max(0.0);
 
             conn.execute(
-                "INSERT INTO sensor_readings (timestamp, node_id, soil_temperature, soil_moisture, air_temperature, air_humidity, light_level)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-                libsql::params![ts, *node, soil_temp, soil_moisture, air_temp, air_humidity, light],
+                "INSERT INTO sensor_readings (timestamp, node_id, soil_temperature, soil_moisture, air_temperature, air_humidity)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                libsql::params![ts, *node, soil_temp, soil_moisture, air_temp, air_humidity],
             )
             .await?;
         }
